@@ -463,7 +463,7 @@ if st.session_state["current_page"] == "simulator":
                     plot_bgcolor='rgba(0,0,0,0)',
                     yaxis_title="Attrition Risk Score (%)",
                     margin=dict(t=20, b=20, l=20, r=20),
-                    xaxis={"tickangle": 45, "tickfont": {"size": 11}}
+                    xaxis={"tickangle": 90, "tickfont": {"size": 11}}
                 )
                 
                 st.plotly_chart(fig_waterfall, use_container_width=True)
