@@ -354,7 +354,7 @@ if st.session_state["current_page"] == "simulator":
             color = "#e74c3c"  # Soft Red
             status_label = "🔴 High Flight Risk!"
 
-        col1, col2 = st.columns([3, 7])
+        col1, col2 = st.columns([4, 6])
         with col1:
             st.write("### Prediction Results")
             
