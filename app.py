@@ -7,6 +7,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
 import os
+import lime
+import lime.lime_tabular
 
 st.set_page_config(page_title= "Attrition.app",layout="wide")
 
@@ -380,69 +382,91 @@ if st.session_state["current_page"] == "simulator":
             # -------------------------------  
 
         with col2:
-            st.write("### 🔍 Individual Attrition Driver Breakdown")
+            st.write("### 🔍 LIME: Local Attrition Driver Breakdown")
             
-            base_rate = 16.0 # Assume baseline attrition rate 
-            total_delta = risk_percentage - base_rate
-            
-            importances = classifier.feature_importances_
-            feature_names = [name.split("__")[-1] for name in preprocessor.get_feature_names_out()]
-            
-            total_importance = sum(importances)
-            normalized_weights = [imp / total_importance for imp in importances]
-            
-            dynamic_x = ["Company Base Average"]
-            dynamic_y = [base_rate]
-            dynamic_text = [f"{base_rate:.1f}%"]
-            dynamic_measure = ["relative"]
-            
-            for name, weight in zip(feature_names, normalized_weights):
-                feature_shift = total_delta * weight
+            if st.session_state["employee_data"] is None:
+                st.warning("⚠️ Please upload Employee Data in the General Dashboard to enable LIME explainability. LIME requires a background dataset to calculate local feature impacts.")
+            else:
+                # --- 1. PREPARE LIME BACKGROUND DATA ---
+                hr_data_ref = st.session_state["employee_data"].copy()
+                df_ref = create_features(hr_data_ref)
+                X_ref = preprocessor.transform(df_ref)
                 
-                if abs(feature_shift) > 0.05:
-                    if name in input_data:
-                        raw_val = input_data[name][0]
-                        display_val = raw_val
-                        label = f"{name} ({display_val})"
-                    else:
-                        label = name
+                # Convert to dense array if your preprocessor outputs a sparse matrix
+                if hasattr(X_ref, "toarray"):
+                    X_ref = X_ref.toarray()
                     
-                    dynamic_x.append(label)
+                feature_names = [name.split("__")[-1] for name in preprocessor.get_feature_names_out()]
+                
+                # --- 2. INITIALIZE LIME EXPLAINER ---
+                explainer = lime.lime_tabular.LimeTabularExplainer(
+                    training_data=X_ref,
+                    feature_names=feature_names,
+                    class_names=['Stay', 'Attrition'],
+                    mode='classification',
+                    random_state=42
+                )
+                
+                # Convert simulated data to dense array
+                sim_dense = sim_preprocessed.toarray()[0] if hasattr(sim_preprocessed, "toarray") else sim_preprocessed[0]
+                
+                # --- 3. GENERATE EXPLANATION ---
+                predict_fn = lambda x: classifier.predict_proba(x)
+                exp = explainer.explain_instance(
+                    data_row=sim_dense, 
+                    predict_fn=predict_fn, 
+                    num_features=8, # Limit to top 8 for UI cleanliness
+                    labels=(1,)     # Force explanation for Class 1 (Attrition)
+                )
+                
+                # --- 4. RENDER LIME WATERFALL CHART ---
+                lime_list = exp.as_list(label=1)
+                intercept = exp.intercept[1] * 100 
+                
+                dynamic_x = ["Background Average"]
+                dynamic_y = [intercept]
+                dynamic_text = [f"{intercept:.1f}%"]
+                dynamic_measure = ["relative"]
+                
+                for condition, weight in lime_list:
+                    feature_shift = weight * 100
+                    dynamic_x.append(condition)  # LIME provides readable conditions like 'Age <= 30'
                     dynamic_y.append(feature_shift)
                     
                     prefix = "+" if feature_shift > 0 else ""
                     dynamic_text.append(f"{prefix}{feature_shift:.2f}%")
                     dynamic_measure.append("relative")
-            
-            dynamic_x.append("Final Risk Score")
-            dynamic_y.append(risk_percentage)
-            dynamic_text.append(f"{risk_percentage:.2f}%")
-            dynamic_measure.append("total")
-            
-            fig_waterfall = go.Figure(go.Waterfall(
-                name="Attrition Drivers",
-                orientation="v",
-                measure=dynamic_measure,
-                x=dynamic_x,
-                text=dynamic_text,
-                y=dynamic_y,
-                connector={"line": {"color": "rgb(63, 63, 63)"}},
-                increasing={"marker": {"color": "#e74c3c"}},
-                decreasing={"marker": {"color": "#2ecc71"}},
-                totals={"marker": {"color": "#4A90E2"}}
-            ))
-            
-            fig_waterfall.update_layout(
-                showlegend=False,
-                height=380,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                yaxis_title="Attrition Risk Score (%)",
-                margin=dict(t=20, b=20, l=20, r=20),
-                xaxis={"tickangle": 90}
-            )
-            
-            st.plotly_chart(fig_waterfall, use_container_width=True)
+                    
+                lime_pred = exp.local_pred[0] * 100
+                dynamic_x.append("Final LIME Risk")
+                dynamic_y.append(lime_pred)
+                dynamic_text.append(f"{lime_pred:.2f}%")
+                dynamic_measure.append("total")
+                
+                fig_waterfall = go.Figure(go.Waterfall(
+                    name="LIME Attrition Drivers",
+                    orientation="v",
+                    measure=dynamic_measure,
+                    x=dynamic_x,
+                    text=dynamic_text,
+                    y=dynamic_y,
+                    connector={"line": {"color": "rgb(63, 63, 63)"}},
+                    increasing={"marker": {"color": "#e74c3c"}},  
+                    decreasing={"marker": {"color": "#2ecc71"}},  
+                    totals={"marker": {"color": "#4A90E2"}}       
+                ))
+                
+                fig_waterfall.update_layout(
+                    showlegend=False,
+                    height=400,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    yaxis_title="Attrition Risk Score (%)",
+                    margin=dict(t=20, b=20, l=20, r=20),
+                    xaxis={"tickangle": 45, "tickfont": {"size": 11}}
+                )
+                
+                st.plotly_chart(fig_waterfall, use_container_width=True)
         # --- RADAR CHART ---
         st.write("### 🧭 Cultural & Satisfaction Alignment")
         categories = ['Job Satisfaction', 'Environment', 'Work-Life Balance', 'Job Involvement']
