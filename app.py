@@ -28,7 +28,7 @@ st.markdown("""
 # Data and model loading
 #------------------------------
 try:
-    classifier = joblib.load(r"C:\Users\pradi\OneDrive\Desktop\Machine Learning–Based Employee Attrition Prediction and Risk Scoring System\Models\classifier.pkl")
+    classifier = joblib.load("Models/classifier.pkl")
 except ModuleNotFoundError as e:
     st.error(f"Missing Library Detected: {e}")
     st.stop()
@@ -37,7 +37,7 @@ except Exception as e:
     st.code(traceback.format_exc())
 
 try:
-    preprocessor = joblib.load(r"C:\Users\pradi\OneDrive\Desktop\Machine Learning–Based Employee Attrition Prediction and Risk Scoring System\Models\preprocessor_pipeline.pkl")
+    preprocessor = joblib.load("Models/preprocessor_pipeline.pkl")
 except ModuleNotFoundError as e:
     st.error(f"Missing Library Detected: {e}")
 except Exception as e:
