@@ -357,27 +357,33 @@ if st.session_state["current_page"] == "simulator":
         col1, col2 = st.columns([3, 7])
         with col1:
             st.write("### Prediction Results")
-            st.markdown(f"""
-                <div style="background-color: #1e222b; padding: 20px; border-radius: 10px; border-left: 5px solid {color};">
-                    <p style="margin: 0; font-size: 14px; color: #a3a8b4; font-weight: bold; text-transform: uppercase;">{status_label}</p>
-                    <h1 style="margin: 5px 0 0 0; font-size: 48px; color: {color}; font-weight: bold;">{risk_percentage:.2f}%</h1>
-                </div>
-            """, unsafe_allow_html=True)
-            # --- INSERT GAUGE CHART HERE ---
+            
+            # --- UPDATED GAUGE CHART (Replaces the text card) ---
             fig_gauge = go.Figure(go.Indicator(
-                mode="gauge",
+                mode="gauge+number",
                 value=risk_percentage,
+                title={'text': f"<b>{status_label}</b>", 'font': {'size': 18, 'color': color}},
+                number={'valueformat': ".2f", 'suffix': "%", 'font': {'size': 42, 'color': color}},
                 gauge={
-                    'axis': {'range': [0, 100]},
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "white"},
                     'bar': {'color': color},
+                    'bgcolor': "rgba(0,0,0,0)",
+                    'borderwidth': 0,
                     'steps': [
-                        {'range': [0, 30], 'color': 'rgba(46, 204, 113, 0.2)'},
-                        {'range': [30, 70], 'color': 'rgba(243, 156, 18, 0.2)'},
-                        {'range': [70, 100], 'color': 'rgba(231, 76, 60, 0.2)'}
+                        {'range': [0, 30], 'color': 'rgba(46, 204, 113, 0.15)'},
+                        {'range': [30, 70], 'color': 'rgba(243, 156, 18, 0.15)'},
+                        {'range': [70, 100], 'color': 'rgba(231, 76, 60, 0.15)'}
                     ],
                 }
             ))
-            fig_gauge.update_layout(height=250, margin=dict(t=40, b=0, l=20, r=20))
+            
+            fig_gauge.update_layout(
+                height=350, 
+                margin=dict(t=50, b=20, l=20, r=20),
+                paper_bgcolor='rgba(0,0,0,0)',
+                font={'color': "white"}
+            )
+            
             st.plotly_chart(fig_gauge, use_container_width=True)
             # -------------------------------  
 
