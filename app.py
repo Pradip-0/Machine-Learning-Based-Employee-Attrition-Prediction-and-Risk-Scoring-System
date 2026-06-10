@@ -30,7 +30,9 @@ st.markdown("""
 # Data and model loading
 #------------------------------
 try:
-    classifier = joblib.load("Models/classifier.pkl")
+    # Updated to extract the internal classifier from the CalibratedClassifierCV wrapper
+    calibrated_model = joblib.load("Models/classifier.pkl")
+    classifier = calibrated_model.calibrated_classifiers_[0].estimator
 except ModuleNotFoundError as e:
     st.error(f"Missing Library Detected: {e}")
     st.stop()
@@ -153,9 +155,9 @@ if st.session_state["current_page"] == "dashboard":
             df_process = hr_data.copy()
             df_process = create_features(df_process)
             
-            # Preprocessing & Prediction
+            # Preprocessing & Prediction using calibrated model wrapper
             processed_data = preprocessor.transform(df_process)
-            probabilities = classifier.predict_proba(processed_data)
+            probabilities = calibrated_model.predict_proba(processed_data)
             attrition_risk_scores = probabilities[:, 1]
             
             results_df = pd.DataFrame({"EmployeeId": hr_data["EmployeeId"], "Attrition Risk Score": attrition_risk_scores})
@@ -341,7 +343,8 @@ if st.session_state["current_page"] == "simulator":
     sim_preprocessed = preprocessor.transform(df_sim)
     
     if st.button("Predict Attrition Risk"):
-        probability = classifier.predict_proba(sim_preprocessed)
+        # Prediction using calibrated wrapper
+        probability = calibrated_model.predict_proba(sim_preprocessed)
         risk_percentage = probability[0][1] * 100
         
         if risk_percentage < 30:
@@ -416,8 +419,8 @@ if st.session_state["current_page"] == "simulator":
                 # Convert simulated data to dense array
                 sim_dense = sim_preprocessed.toarray()[0] if hasattr(sim_preprocessed, "toarray") else sim_preprocessed[0]
                 
-                # --- 3. GENERATE EXPLANATION ---
-                predict_fn = lambda x: classifier.predict_proba(x)
+                # --- 3. GENERATE EXPLANATION USING CALIBRATED MODEL ---
+                predict_fn = lambda x: calibrated_model.predict_proba(x)
                 exp = explainer.explain_instance(
                     data_row=sim_dense, 
                     predict_fn=predict_fn, 
