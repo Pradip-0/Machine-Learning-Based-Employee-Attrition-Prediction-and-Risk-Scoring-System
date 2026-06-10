@@ -1,0 +1,10 @@
+{
+    "loss": "exponential",
+    "learning_rate": 0.02671139783105934,
+    "n_estimators": 295,
+    "criterion": "friedman_mse",
+    "min_samples_split": 2,
+    "min_impurity_decrease": 0.08653117521028135,
+    "max_depth": 10,
+    "max_features_option": "log2"
+}

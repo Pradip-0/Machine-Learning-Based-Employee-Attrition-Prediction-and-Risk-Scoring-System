@@ -1,0 +1,9 @@
+{
+    "n_estimators": 283,
+    "criterion": "gini",
+    "max_depth": 10,
+    "min_samples_split": 10,
+    "bootstrap": false,
+    "class_weight": "balanced_subsample",
+    "max_features_option": "log2"
+}
