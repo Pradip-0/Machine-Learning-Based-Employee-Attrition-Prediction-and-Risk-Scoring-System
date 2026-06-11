@@ -171,31 +171,31 @@ If you wish to bypass the EDA and training pipeline entirely, the fully optimize
 
 ## 📂 Repository Structure:
 ```text
-├─ README.md
-├─ requirements.txt
-├─ app.py
-├─ Project_report
-├─ .gitignore.txt
-├─ Data/
-│    ├─ Palo Alto Networks.csv
-│    ├─ Hyperparameters/
-│    │        ├─ GB_params.json
-│    │        ├─ LR_params.json
-│    │        ├─ RF_params.json
-│    │        └─ XGB_params.json
-│    └─ Processed Employee Data/
-│    │              ├─ X_train_final.csv
-│    │              ├─ x_test_final.csv
-│    │              ├─ Y_train_final.csv
-│    │              └─ y_test_final.csv 
-├─ Models/
-│     ├─ classifier.pkl
-│     └─ preprocessor_pipeline.pkl
+├─ 📒 README.md
+├─ 📃 requirements.txt
+├─ ⚙️ app.py
+├─ 📖 Project_report
+├─ 📄 .gitignore.txt
+├─ 📂 Data/
+│       ├─ 📚 Palo Alto Networks.csv
+│       ├─ 📂 Hyperparameters/
+│       │        ├─ 📒 GB_params.json
+│       │        ├─ 📒 LR_params.json
+│       │        ├─ 📒 RF_params.json
+│       │        └─ 📒 XGB_params.json
+│       └─ 📂 Processed Employee Data/
+│    │              ├─ 📚 X_train_final.csv
+│    │              ├─ 📚 x_test_final.csv
+│    │              ├─ 📚 Y_train_final.csv
+│    │              └─ 📚 y_test_final.csv 
+├─ 📂 Models/
+│        ├─ 🗃️ classifier.pkl
+│        └─ 🗃️ preprocessor_pipeline.pkl
 ├─ Notebooks/
-│     ├─ EDA.ipynb
-│     ├─ Feature_engineering.ipynb
-│     ├─ model-optimizer.ipynb
-│     └─model-training.ipynb
+│     ├─ 📔 EDA.ipynb
+│     ├─ 📙 Feature_engineering.ipynb
+│     ├─ 📗 model-optimizer.ipynb
+│     └─ 📕 model-training.ipynb
 ```
 
 
